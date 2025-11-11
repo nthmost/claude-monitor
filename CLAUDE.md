@@ -31,29 +31,31 @@ This is a general-purpose monitoring tool for tracking Claude Code task progress
 The monitor supports 4 display size modes via `--size` argument to accommodate different screen sizes:
 
 **Tiny Mode** (`--size tiny`, default):
-- Compact view optimized for small screens
+- Ultra-minimal for truly tiny screens (will be further minimized soon)
 - Columns: Status, Project/Task (flexible width), Progress (bar), Updated
 - Only 4 columns to maximize horizontal space
-- Progress bar is smaller (8 chars) to give more space to Project/Task column
+- Progress bar is small (8 chars)
 - Project/Task column shows: tiny_title/project name, task name, current step (multi-line)
 - Supports optional `tiny_title` field for custom short labels
 
 **Small Mode** (`--size small`):
-- Clean columnar layout
+- Compact view with progress bar
+- Columns: Status, Project/Task (flexible width), Progress (bar), Updated
+- Same as tiny but intended for small screens that can fit more info
+- Good baseline for most uses
+
+**Medium Mode** (`--size medium`):
+- Clean columnar layout, no progress bar
 - Columns: Status, Project, Task, Current Step, Updated
 - Each piece of info gets its own column
 - No progress bar (text-based step info instead)
-
-**Medium Mode** (`--size medium`):
-- Expanded view with separate columns
-- Columns: Status, Project, Task, Current Step, Message, Updated
-- Current Step and Message in separate columns
-- Good for larger screens where you want detail
+- Good for medium-sized displays
 
 **Large Mode** (`--size large`):
 - Maximum information display
 - Columns: Status, Project, Task, Current Step, Message, Progress %, Updated
-- All available fields shown
+- Separate columns for Current Step and Message
+- Progress shown as percentage
 - Best for wide/high-resolution displays
 
 ### Display Design Details
