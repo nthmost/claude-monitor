@@ -26,17 +26,41 @@ This is a general-purpose monitoring tool for tracking Claude Code task progress
    - Completed tasks: Hidden after 30 minutes
    - Tasks older than 24 hours are never loaded from disk
 
-### Display Design Decisions
+### Display Size Modes
 
-The monitor UI is optimized for maximum information density while remaining readable:
+The monitor supports 4 display size modes via `--size` argument to accommodate different screen sizes:
+
+**Tiny Mode** (`--size tiny`, default):
+- Compact view optimized for small screens
+- Columns: Status, Project, Task (multi-line with step/message), Progress (bar), Updated
+- Task info bundled together to minimize horizontal space
+- Progress bar shows visual feedback (20 chars)
+
+**Small Mode** (`--size small`):
+- Clean columnar layout
+- Columns: Status, Project, Task, Current Step, Updated
+- Each piece of info gets its own column
+- No progress bar (text-based step info instead)
+
+**Medium Mode** (`--size medium`):
+- Expanded view with separate columns
+- Columns: Status, Project, Task, Current Step, Message, Updated
+- Current Step and Message in separate columns
+- Good for larger screens where you want detail
+
+**Large Mode** (`--size large`):
+- Maximum information display
+- Columns: Status, Project, Task, Current Step, Message, Progress %, Updated
+- All available fields shown
+- Best for wide/high-resolution displays
+
+### Display Design Details
 
 - **Status column**: Shows only emoji (🔄, ⚠️, ✅, ❌), no redundant text
 - **Full-width tables**: All tables expand to terminal width with `expand=True`
 - **Row separators**: `show_lines=True` adds horizontal lines between task rows for clarity
-- **Multi-line task info**: Task name (bold), current step (dim), and message (italic) on separate lines
-- **Progress bars**: 20 characters wide with percentage on separate line
 - **Time tracking**: "Updated" column shows relative time (e.g., "5s ago", "2m ago", "3h ago")
-- **Completed tasks table**: Shows up to 10 recently completed tasks in full table format
+- **Completed tasks table**: Shows up to 10 recently completed tasks in full table format (same across all sizes)
 - **Minimal header**: Removed "Press Ctrl+C to exit" and "Update interval" lines to maximize vertical space for task display
 
 ### Status File Format
@@ -84,6 +108,23 @@ python3 monitor.py --watch ~/.claude-monitor --interval 5.0
 - `--watch`: Directories to watch for status files (default: `~/.claude-monitor`)
 - `--interval`: Update interval in seconds (default: 2.0)
 - `--breadcrumb`: Filename pattern to match (default: `*.json`)
+- `--size`: Display size mode: `tiny` (default), `small`, `medium`, or `large`
+
+### Examples
+
+```bash
+# Tiny mode (default) - for small screens
+./run_monitor.sh
+
+# Small mode - clean columns without progress bar
+./run_monitor.sh --size small
+
+# Medium mode - separate step and message columns
+./run_monitor.sh --size medium
+
+# Large mode - all fields including progress percentage
+./run_monitor.sh --size large
+```
 
 ### Creating Status Files
 

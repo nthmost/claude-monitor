@@ -102,6 +102,30 @@ Use a different status filename:
 python3 /path/to/claude-monitor/monitor.py --breadcrumb .my_task_status.json
 ```
 
+### Choose Display Size
+
+The monitor supports 4 display sizes to fit different screen sizes:
+
+```bash
+# Tiny mode (default) - compact with progress bar, good for small screens
+python3 /path/to/claude-monitor/monitor.py --size tiny
+
+# Small mode - clean columns without progress bar
+python3 /path/to/claude-monitor/monitor.py --size small
+
+# Medium mode - separate step and message columns
+python3 /path/to/claude-monitor/monitor.py --size medium
+
+# Large mode - all fields including progress percentage
+python3 /path/to/claude-monitor/monitor.py --size large
+```
+
+**Display Mode Comparison:**
+- **Tiny**: Status | Project | Task (multi-line) | Progress Bar | Updated
+- **Small**: Status | Project | Task | Current Step | Updated
+- **Medium**: Status | Project | Task | Current Step | Message | Updated
+- **Large**: Status | Project | Task | Current Step | Message | Progress % | Updated
+
 ## Integrating with Your Projects
 
 To enable monitoring in your projects, you need to:

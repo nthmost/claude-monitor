@@ -279,17 +279,166 @@ def create_summary_panel(monitor: ClaudeMonitor) -> Panel:
     return Panel(summary_text, title="📊 Claude Task Monitor", border_style="cyan bold", expand=True)
 
 
-def create_display(monitor: ClaudeMonitor) -> Group:
-    """Create the full display layout"""
+def format_time_ago(age_seconds: Optional[float]) -> str:
+    """Format age in seconds to human-readable time ago string"""
+    if age_seconds is None:
+        return ""
+    if age_seconds < 60:
+        return f"{int(age_seconds)}s ago"
+    elif age_seconds < 3600:
+        return f"{int(age_seconds/60)}m ago"
+    else:
+        return f"{int(age_seconds/3600)}h ago"
+
+
+def create_active_tasks_tiny(active_tasks: List[TaskStatus]) -> Table:
+    """Tiny mode: Project + Progress bar (original compact view)"""
+    table = Table(title="🔄 Active Tasks", show_header=True, border_style="yellow", expand=True, show_lines=True)
+    table.add_column("Status", width=8)
+    table.add_column("Project", style="cyan", width=20)
+    table.add_column("Task", style="white", no_wrap=False)
+    table.add_column("Progress", width=25)
+    table.add_column("Updated", width=12, style="dim")
+
+    for task in active_tasks:
+        status_text = task.get_emoji()
+
+        # Task name with current step and message inline
+        task_desc = f"[bold]{task.task_name}[/bold]"
+        if task.current_step:
+            task_desc += f"\n[dim]{task.current_step}[/dim]"
+        if task.message and task.message != task.current_step:
+            task_desc += f"\n[italic]{task.message}[/italic]"
+
+        # Progress indicator with bar
+        progress = ""
+        if task.progress_percent is not None:
+            bar_length = 20
+            filled = int(bar_length * task.progress_percent / 100)
+            bar = "█" * filled + "░" * (bar_length - filled)
+            progress = f"[{task.get_color()}]{bar}[/{task.get_color()}]\n{task.progress_percent}%"
+        elif task.message:
+            progress = f"[dim]{task.message}[/dim]"
+
+        row_style = "bold red" if task.needs_attention else None
+        table.add_row(
+            status_text,
+            task.project_name,
+            task_desc,
+            progress,
+            format_time_ago(task.age_seconds),
+            style=row_style
+        )
+
+    return table
+
+
+def create_active_tasks_small(active_tasks: List[TaskStatus]) -> Table:
+    """Small mode: Status + Project + Task + Current Step + Updated"""
+    table = Table(title="🔄 Active Tasks", show_header=True, border_style="yellow", expand=True, show_lines=True)
+    table.add_column("Status", width=8)
+    table.add_column("Project", style="cyan", width=20)
+    table.add_column("Task", style="white")
+    table.add_column("Current Step", style="dim")
+    table.add_column("Updated", width=12, style="dim")
+
+    for t in active_tasks:
+        step_info = t.current_step or t.message or ""
+        row_style = "bold red" if t.needs_attention else None
+
+        table.add_row(
+            t.get_emoji(),
+            t.project_name,
+            t.task_name,
+            step_info,
+            format_time_ago(t.age_seconds),
+            style=row_style
+        )
+
+    return table
+
+
+def create_active_tasks_medium(active_tasks: List[TaskStatus]) -> Table:
+    """Medium mode: Add Message column separate from Current Step"""
+    table = Table(title="🔄 Active Tasks", show_header=True, border_style="yellow", expand=True, show_lines=True)
+    table.add_column("Status", width=8)
+    table.add_column("Project", style="cyan", width=18)
+    table.add_column("Task", style="white", width=25)
+    table.add_column("Current Step", style="dim", width=25)
+    table.add_column("Message", style="italic dim", width=25)
+    table.add_column("Updated", width=12, style="dim")
+
+    for t in active_tasks:
+        row_style = "bold red" if t.needs_attention else None
+
+        table.add_row(
+            t.get_emoji(),
+            t.project_name,
+            t.task_name,
+            t.current_step or "",
+            t.message or "",
+            format_time_ago(t.age_seconds),
+            style=row_style
+        )
+
+    return table
+
+
+def create_active_tasks_large(active_tasks: List[TaskStatus]) -> Table:
+    """Large mode: All fields including progress percentage"""
+    table = Table(title="🔄 Active Tasks", show_header=True, border_style="yellow", expand=True, show_lines=True)
+    table.add_column("Status", width=8)
+    table.add_column("Project", style="cyan", width=18)
+    table.add_column("Task", style="white", width=25)
+    table.add_column("Current Step", style="dim", width=25)
+    table.add_column("Message", style="italic dim", width=25)
+    table.add_column("Progress", width=8, justify="right")
+    table.add_column("Updated", width=12, style="dim")
+
+    for t in active_tasks:
+        row_style = "bold red" if t.needs_attention else None
+        progress_str = f"{t.progress_percent}%" if t.progress_percent is not None else ""
+
+        table.add_row(
+            t.get_emoji(),
+            t.project_name,
+            t.task_name,
+            t.current_step or "",
+            t.message or "",
+            progress_str,
+            format_time_ago(t.age_seconds),
+            style=row_style
+        )
+
+    return table
+
+
+def create_display(monitor: ClaudeMonitor, size: str = "small") -> Group:
+    """Create the full display layout
+
+    Args:
+        monitor: ClaudeMonitor instance
+        size: Display size mode - 'tiny', 'small', 'medium', or 'large'
+    """
     components = []
 
     # Summary panel
     components.append(create_summary_panel(monitor))
 
-    # Active tasks table
+    # Active tasks table (size-dependent)
     active_tasks = monitor.get_active_tasks()
     if active_tasks:
-        components.append(create_task_table(active_tasks, "🔄 Active Tasks"))
+        if size == "tiny":
+            components.append(create_active_tasks_tiny(active_tasks))
+        elif size == "small":
+            components.append(create_active_tasks_small(active_tasks))
+        elif size == "medium":
+            components.append(create_active_tasks_medium(active_tasks))
+        elif size == "large":
+            components.append(create_active_tasks_large(active_tasks))
+        else:
+            # Default to small
+            components.append(create_active_tasks_small(active_tasks))
     else:
         components.append(Panel(
             "[green]No active tasks - all quiet! 🎉[/green]",
@@ -350,6 +499,12 @@ def main():
         default='*.json',
         help='Breadcrumb filename pattern to look for (default: *.json)'
     )
+    parser.add_argument(
+        '--size',
+        choices=['tiny', 'small', 'medium', 'large'],
+        default='tiny',
+        help='Display size mode: tiny (compact with progress bar), small (clean columns), medium (separate step/message), large (all fields)'
+    )
 
     args = parser.parse_args()
 
@@ -358,7 +513,8 @@ def main():
 
     console.print("[cyan]🔍 Claude Task Monitor[/cyan]\n")
     console.print(f"[dim]Watching: {', '.join(str(p) for p in watch_paths)}[/dim]")
-    console.print(f"[dim]Looking for: {args.breadcrumb}[/dim]\n")
+    console.print(f"[dim]Looking for: {args.breadcrumb}[/dim]")
+    console.print(f"[dim]Display size: {args.size}[/dim]\n")
 
     monitor = ClaudeMonitor(watch_paths, args.breadcrumb)
 
@@ -366,7 +522,7 @@ def main():
         with Live(console=console, refresh_per_second=1/args.interval) as live:
             while True:
                 monitor.scan_for_breadcrumbs()
-                display = create_display(monitor)
+                display = create_display(monitor, size=args.size)
                 live.update(display)
                 time.sleep(args.interval)
 

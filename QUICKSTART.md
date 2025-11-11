@@ -103,6 +103,24 @@ screen -S claude-monitor
 
 ## Common Use Cases
 
+### Choose Display Size
+
+Pick the mode that fits your screen:
+
+```bash
+# Tiny (default) - compact with progress bar
+./run_monitor.sh
+
+# Small - clean columns, no progress bar
+./run_monitor.sh --size small
+
+# Medium - separate step/message columns
+./run_monitor.sh --size medium
+
+# Large - all fields including progress %
+./run_monitor.sh --size large
+```
+
 ### Watching Additional Directories
 
 ```bash
