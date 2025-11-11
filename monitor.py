@@ -304,15 +304,17 @@ def create_active_tasks_tiny(active_tasks: List[TaskStatus]) -> Table:
     table.add_column("Progress", width=12)
     table.add_column("Updated", width=10, style="dim")
 
-    for task in active_tasks:
+    for idx, task in enumerate(active_tasks):
         status_text = task.get_emoji()
 
-        # If tiny_title is provided, use ONLY that (single line, no task name, no step)
-        # Otherwise, show project + task + step (multi-line)
+        # If tiny_title is provided, use ONLY that (single line, replaces everything)
+        # Otherwise, show compact 2-line format: [project]:[task] + current_step
         if task.tiny_title:
             task_display = f"[bold]{task.tiny_title}[/bold]"
         else:
-            task_display = f"[cyan]{task.project_name}[/cyan]\n[bold]{task.task_name}[/bold]"
+            # Line 1: project:task
+            task_display = f"[cyan]{task.project_name}[/cyan]:[bold]{task.task_name}[/bold]"
+            # Line 2: current step (if present)
             if task.current_step:
                 task_display += f"\n[dim]{task.current_step}[/dim]"
 
@@ -323,7 +325,12 @@ def create_active_tasks_tiny(active_tasks: List[TaskStatus]) -> Table:
             bar = "█" * filled + "░" * (bar_length - filled)
             progress = f"[{task.get_color()}]{bar}[/{task.get_color()}]\n{task.progress_percent}%"
 
-        row_style = "bold red" if task.needs_attention else None
+        # Alternating colors: complementary color scheme
+        if task.needs_attention:
+            row_style = "bold light_coral"
+        else:
+            row_style = "bright_white" if idx % 2 == 0 else "light_coral"
+
         table.add_row(
             status_text,
             task_display,
@@ -343,7 +350,7 @@ def create_active_tasks_small(active_tasks: List[TaskStatus]) -> Table:
     table.add_column("Progress", width=12)
     table.add_column("Updated", width=10, style="dim")
 
-    for task in active_tasks:
+    for idx, task in enumerate(active_tasks):
         status_text = task.get_emoji()
 
         if task.tiny_title:
@@ -361,7 +368,12 @@ def create_active_tasks_small(active_tasks: List[TaskStatus]) -> Table:
             bar = "█" * filled + "░" * (bar_length - filled)
             progress = f"[{task.get_color()}]{bar}[/{task.get_color()}]\n{task.progress_percent}%"
 
-        row_style = "bold red" if task.needs_attention else None
+        # Alternating colors: complementary color scheme
+        if task.needs_attention:
+            row_style = "bold light_coral"
+        else:
+            row_style = "bright_white" if idx % 2 == 0 else "light_coral"
+
         table.add_row(
             status_text,
             project_task,
@@ -382,9 +394,14 @@ def create_active_tasks_medium(active_tasks: List[TaskStatus]) -> Table:
     table.add_column("Current Step", style="dim")
     table.add_column("Updated", width=12, style="dim")
 
-    for t in active_tasks:
+    for idx, t in enumerate(active_tasks):
         step_info = t.current_step or t.message or ""
-        row_style = "bold red" if t.needs_attention else None
+
+        # Alternating colors: complementary color scheme
+        if t.needs_attention:
+            row_style = "bold light_coral"
+        else:
+            row_style = "bright_white" if idx % 2 == 0 else "light_coral"
 
         table.add_row(
             t.get_emoji(),
@@ -409,8 +426,13 @@ def create_active_tasks_large(active_tasks: List[TaskStatus]) -> Table:
     table.add_column("Progress", width=8, justify="right")
     table.add_column("Updated", width=12, style="dim")
 
-    for t in active_tasks:
-        row_style = "bold red" if t.needs_attention else None
+    for idx, t in enumerate(active_tasks):
+        # Alternating colors: complementary color scheme
+        if t.needs_attention:
+            row_style = "bold light_coral"
+        else:
+            row_style = "bright_white" if idx % 2 == 0 else "light_coral"
+
         progress_str = f"{t.progress_percent}%" if t.progress_percent is not None else ""
 
         table.add_row(
@@ -460,16 +482,20 @@ def create_display(monitor: ClaudeMonitor, size: str = "small") -> Group:
             expand=True
         ))
 
-    # Recently completed tasks (expanded view)
+    # Recently completed tasks (size-dependent view)
     completed_tasks = monitor.get_completed_tasks()
     if completed_tasks:
         completed_table = Table(title="✅ Recently Completed", show_header=True, border_style="green", expand=True)
         completed_table.add_column("Project", style="cyan", width=20)
         completed_table.add_column("Task", style="white")
-        completed_table.add_column("Message", style="dim")
+
+        # Only show Message column for medium and large sizes
+        if size in ["medium", "large"]:
+            completed_table.add_column("Message", style="dim")
+
         completed_table.add_column("Completed", width=12, style="dim")
 
-        for t in completed_tasks[:10]:  # Show up to 10 completed tasks
+        for idx, t in enumerate(completed_tasks[:10]):  # Show up to 10 completed tasks
             if t.age_seconds is not None:
                 if t.age_seconds < 60:
                     time_str = f"{int(t.age_seconds)}s ago"
@@ -480,12 +506,26 @@ def create_display(monitor: ClaudeMonitor, size: str = "small") -> Group:
             else:
                 time_str = ""
 
-            completed_table.add_row(
-                t.project_name,
-                t.task_name,
-                t.message or "",
-                time_str
-            )
+            # Alternating row styles for better readability - calming green/blue for completed
+            row_style = "dodger_blue1" if idx % 2 == 0 else "light_green"
+
+            # Add row with or without message based on size mode
+            if size in ["medium", "large"]:
+                completed_table.add_row(
+                    t.project_name,
+                    t.task_name,
+                    t.message or "",
+                    time_str,
+                    style=row_style
+                )
+            else:
+                # Tiny and small modes: no message column
+                completed_table.add_row(
+                    t.project_name,
+                    t.task_name,
+                    time_str,
+                    style=row_style
+                )
 
         components.append(completed_table)
 

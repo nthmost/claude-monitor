@@ -71,7 +71,7 @@ def random_command():
     return action
 
 def update_task_status(filename, task_name, status, progress_percent=None,
-                       current_step=None, message=None, needs_attention=False):
+                       current_step=None, message=None, needs_attention=False, tiny_title=None):
     """Update a task status file"""
     data = {
         'task_name': task_name,
@@ -86,6 +86,8 @@ def update_task_status(filename, task_name, status, progress_percent=None,
         data['message'] = message
     if needs_attention:
         data['needs_attention'] = needs_attention
+    if tiny_title:
+        data['tiny_title'] = tiny_title
 
     with open(MONITOR_DIR / filename, 'w') as f:
         json.dump(data, f, indent=2)
@@ -107,7 +109,8 @@ def task_control_panel_1():
                 progress_percent=progress,
                 current_step=f'⚠️ {random.choice(CRISES)}!',
                 message=command,
-                needs_attention=True
+                needs_attention=True,
+                tiny_title='⚡ ALPHA'
             )
             time.sleep(3)
         else:
@@ -117,7 +120,8 @@ def task_control_panel_1():
                 'in_progress',
                 progress_percent=progress,
                 current_step=command,
-                message=f'Urgency: {"!!!" if random.random() < 0.3 else "!!"}'
+                message=f'Urgency: {"!!!" if random.random() < 0.3 else "!!"}',
+                tiny_title='⚡ ALPHA'
             )
             time.sleep(random.uniform(0.8, 2))
 
@@ -126,7 +130,8 @@ def task_control_panel_1():
         '⚡ PANEL ALPHA',
         'completed',
         progress_percent=100,
-        message='ALL SYSTEMS NOMINAL!'
+        message='ALL SYSTEMS NOMINAL!',
+        tiny_title='⚡ ALPHA'
     )
 
 def task_control_panel_2():
@@ -147,7 +152,8 @@ def task_control_panel_2():
                 progress_percent=progress,
                 current_step=f'{widget} IS STUCK!',
                 message='SOMEONE HELP ME WITH THIS!',
-                needs_attention=True
+                needs_attention=True,
+                tiny_title='🔧 BETA'
             )
             time.sleep(3)
         else:
@@ -157,7 +163,8 @@ def task_control_panel_2():
                 'in_progress',
                 progress_percent=progress,
                 current_step=command,
-                message='DOING IT! DOING IT!'
+                message='DOING IT! DOING IT!',
+                tiny_title='🔧 BETA'
             )
             time.sleep(random.uniform(0.9, 2.2))
 
@@ -166,7 +173,8 @@ def task_control_panel_2():
         '🔧 PANEL BETA',
         'completed',
         progress_percent=100,
-        message='PANEL SECURE!'
+        message='PANEL SECURE!',
+        tiny_title='🔧 BETA'
     )
 
 def task_control_panel_3():
@@ -183,7 +191,8 @@ def task_control_panel_3():
             'in_progress',
             progress_percent=progress,
             current_step=command,
-            message=f'Status: {"CRITICAL!" if random.random() < 0.2 else "OK"}'
+            message=f'Status: {"CRITICAL!" if random.random() < 0.2 else "OK"}',
+            tiny_title='⚙️ GAMMA'
         )
         time.sleep(random.uniform(0.7, 2.1))
 
@@ -192,7 +201,8 @@ def task_control_panel_3():
         '⚙️ PANEL GAMMA',
         'completed',
         progress_percent=100,
-        message='GAMMA STABLE!'
+        message='GAMMA STABLE!',
+        tiny_title='⚙️ GAMMA'
     )
 
 def task_engineering():
@@ -221,7 +231,8 @@ def task_engineering():
                 progress_percent=progress,
                 current_step='⚠️⚠️ CORE BREACH! ⚠️⚠️',
                 message='EVACUATE ENGINEERING DECK!',
-                needs_attention=True
+                needs_attention=True,
+                tiny_title='🔥 ENGINE'
             )
             time.sleep(4)
 
@@ -231,7 +242,8 @@ def task_engineering():
             'in_progress',
             progress_percent=progress,
             current_step=cmd,
-            message=f'{system} responding...'
+            message=f'{system} responding...',
+            tiny_title='🔥 ENGINE'
         )
         time.sleep(random.uniform(1.5, 2.5))
 
@@ -240,7 +252,8 @@ def task_engineering():
         '🔥 ENGINEERING',
         'completed',
         progress_percent=100,
-        message='Engineering crisis resolved!'
+        message='Engineering crisis resolved!',
+        tiny_title='🔥 ENGINE'
     )
 
 def task_weapons():
@@ -255,7 +268,8 @@ def task_weapons():
         'in_progress',
         progress_percent=0,
         current_step='POWERING UP WEAPONS',
-        message='Charging laser banks...'
+        message='Charging laser banks...',
+        tiny_title='💥 WEAPONS'
     )
     time.sleep(2)
 
@@ -278,7 +292,8 @@ def task_weapons():
             'in_progress',
             progress_percent=progress,
             current_step=random.choice(commands),
-            message='PEW PEW PEW! 💥'
+            message='PEW PEW PEW! 💥',
+            tiny_title='💥 WEAPONS'
         )
         time.sleep(random.uniform(1, 2))
 
@@ -287,7 +302,8 @@ def task_weapons():
         '💥 WEAPONS',
         'completed',
         progress_percent=100,
-        message='ALL HOSTILES DESTROYED!'
+        message='ALL HOSTILES DESTROYED!',
+        tiny_title='💥 WEAPONS'
     )
 
 def task_navigation():
@@ -322,7 +338,8 @@ def task_navigation():
             'in_progress',
             progress_percent=progress,
             current_step=f'{random.choice(commands)} - {obstacle}',
-            message='HOLD ON TO SOMETHING!'
+            message='HOLD ON TO SOMETHING!',
+            tiny_title='🎯 NAV'
         )
         time.sleep(random.uniform(1.2, 2.5))
 
@@ -331,7 +348,8 @@ def task_navigation():
         '🎯 NAVIGATION',
         'completed',
         progress_percent=100,
-        message='NAVIGATION COMPLETE! Nice flying!'
+        message='NAVIGATION COMPLETE! Nice flying!',
+        tiny_title='🎯 NAV'
     )
 
 def task_crisis_manager():
@@ -349,7 +367,8 @@ def task_crisis_manager():
             progress_percent=20 * (i + 1),
             current_step=f'⚠️ {crisis}! ⚠️',
             message=f'EMERGENCY: {random_command()}!',
-            needs_attention=True
+            needs_attention=True,
+            tiny_title='🚨 CRISIS'
         )
         time.sleep(random.uniform(4, 6))
 
@@ -359,7 +378,8 @@ def task_crisis_manager():
             'in_progress',
             progress_percent=20 * (i + 1),
             current_step='Crisis averted!',
-            message='Phew! That was close!'
+            message='Phew! That was close!',
+            tiny_title='🚨 CRISIS'
         )
         time.sleep(1)
 
@@ -368,7 +388,8 @@ def task_crisis_manager():
         '🚨 CRISIS ALERT',
         'completed',
         progress_percent=100,
-        message='ALL CRISES RESOLVED! WE SURVIVED!'
+        message='ALL CRISES RESOLVED! WE SURVIVED!',
+        tiny_title='🚨 CRISIS'
     )
 
 def task_shields():
@@ -381,7 +402,8 @@ def task_shields():
         'in_progress',
         progress_percent=50,
         current_step='SHIELDS UP',
-        message='Deflectors at 50%'
+        message='Deflectors at 50%',
+        tiny_title='🛡️ SHIELDS'
     )
     time.sleep(2)
 
@@ -396,7 +418,8 @@ def task_shields():
             progress_percent=shield_pct,
             current_step=f'TAKING FIRE! HIT #{hit}',
             message='REROUTE POWER TO SHIELDS!' if shield_pct < 25 else 'Holding...',
-            needs_attention=(shield_pct < 25)
+            needs_attention=(shield_pct < 25),
+            tiny_title='🛡️ SHIELDS'
         )
         time.sleep(2)
 
@@ -405,7 +428,8 @@ def task_shields():
         '🛡️ SHIELDS',
         'completed',
         progress_percent=35,
-        message='Enemy retreating! Shields stabilizing.'
+        message='Enemy retreating! Shields stabilizing.',
+        tiny_title='🛡️ SHIELDS'
     )
 
 if __name__ == '__main__':
