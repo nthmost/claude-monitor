@@ -300,23 +300,22 @@ def create_active_tasks_tiny(active_tasks: List[TaskStatus]) -> Table:
     """Tiny mode: Compact view with small progress bar, optimized for tiny screens"""
     table = Table(title="🔄 Active Tasks", show_header=True, border_style="yellow", expand=True, show_lines=True)
     table.add_column("Status", width=8)
-    table.add_column("Project/Task", style="cyan", width=18)
-    table.add_column("Details", style="white", no_wrap=False)
+    table.add_column("Project/Task", style="cyan", no_wrap=False)  # Flexible width - gets most space
     table.add_column("Progress", width=12)
     table.add_column("Updated", width=10, style="dim")
 
     for task in active_tasks:
         status_text = task.get_emoji()
 
-        # Use tiny_title if available, otherwise project name
-        project_task = task.tiny_title or task.project_name
+        # Use tiny_title if available, otherwise combine project + task
+        if task.tiny_title:
+            project_task = f"[cyan]{task.tiny_title}[/cyan]\n[bold]{task.task_name}[/bold]"
+        else:
+            project_task = f"[cyan]{task.project_name}[/cyan]\n[bold]{task.task_name}[/bold]"
 
-        # Task details: name, current step, and message
-        task_details = f"[bold]{task.task_name}[/bold]"
+        # Add current step if available
         if task.current_step:
-            task_details += f"\n[dim]{task.current_step}[/dim]"
-        if task.message and task.message != task.current_step:
-            task_details += f"\n[italic dim]{task.message}[/italic dim]"
+            project_task += f"\n[dim]{task.current_step}[/dim]"
 
         # Smaller progress bar (8 chars instead of 20)
         progress = ""
@@ -325,15 +324,11 @@ def create_active_tasks_tiny(active_tasks: List[TaskStatus]) -> Table:
             filled = int(bar_length * task.progress_percent / 100)
             bar = "█" * filled + "░" * (bar_length - filled)
             progress = f"[{task.get_color()}]{bar}[/{task.get_color()}]\n{task.progress_percent}%"
-        elif task.current_step:
-            # Show current step in progress column if no percentage
-            progress = f"[dim]{task.current_step[:20]}[/dim]"
 
         row_style = "bold red" if task.needs_attention else None
         table.add_row(
             status_text,
             project_task,
-            task_details,
             progress,
             format_time_ago(task.age_seconds),
             style=row_style
