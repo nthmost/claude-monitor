@@ -32,9 +32,11 @@ The monitor supports 4 display size modes via `--size` argument to accommodate d
 
 **Tiny Mode** (`--size tiny`, default):
 - Compact view optimized for small screens
-- Columns: Status, Project, Task (multi-line with step/message), Progress (bar), Updated
-- Task info bundled together to minimize horizontal space
-- Progress bar shows visual feedback (20 chars)
+- Columns: Status, Project/Task, Details, Progress (bar), Updated
+- Progress bar is smaller (8 chars) to give more space to task details
+- Supports optional `tiny_title` field for custom short titles
+- If `tiny_title` is set, it replaces the project name in the Project/Task column
+- Task details show task name, current step, and message
 
 **Small Mode** (`--size small`):
 - Clean columnar layout
@@ -87,6 +89,7 @@ The monitor supports 4 display size modes via `--size` argument to accommodate d
 - `current_step` (string): What's happening now
 - `message` (string): Additional context
 - `needs_attention` (bool): User intervention required
+- `tiny_title` (string): Short title for tiny display mode (replaces project name in Project/Task column)
 
 ## Usage
 
