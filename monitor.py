@@ -505,16 +505,23 @@ def main():
         default='tiny',
         help='Display size mode: tiny (compact with progress bar), small (clean columns), medium (separate step/message), large (all fields)'
     )
+    parser.add_argument(
+        '--debug',
+        action='store_true',
+        help='Show startup info (watching paths, breadcrumb pattern, display size)'
+    )
 
     args = parser.parse_args()
 
     # Expand paths
     watch_paths = [Path(p).expanduser().resolve() for p in args.watch]
 
-    console.print("[cyan]🔍 Claude Task Monitor[/cyan]\n")
-    console.print(f"[dim]Watching: {', '.join(str(p) for p in watch_paths)}[/dim]")
-    console.print(f"[dim]Looking for: {args.breadcrumb}[/dim]")
-    console.print(f"[dim]Display size: {args.size}[/dim]\n")
+    # Only show startup info in debug mode
+    if args.debug:
+        console.print("[cyan]🔍 Claude Task Monitor[/cyan]\n")
+        console.print(f"[dim]Watching: {', '.join(str(p) for p in watch_paths)}[/dim]")
+        console.print(f"[dim]Looking for: {args.breadcrumb}[/dim]")
+        console.print(f"[dim]Display size: {args.size}[/dim]\n")
 
     monitor = ClaudeMonitor(watch_paths, args.breadcrumb)
 
