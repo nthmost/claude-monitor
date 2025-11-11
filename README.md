@@ -4,7 +4,7 @@ A general-purpose monitoring tool for tracking Claude Code task progress across 
 
 ## Overview
 
-This monitor watches for `.claude_task.json` breadcrumb files that Claude Code (or any process) can create to report task status. It displays a live-updating terminal interface showing active tasks, their progress, and which ones need attention.
+This monitor watches for JSON status files in `~/.claude-monitor/` that Claude Code (or any process) creates to report task status. It displays a live-updating terminal interface showing active tasks, their progress, and which ones need attention.
 
 ## Features
 
@@ -72,7 +72,7 @@ claude-monitor
 
 ### Basic Usage
 
-Monitor default locations (~/projects, ~/llm-router, ~):
+Monitor the default status file directory (`~/.claude-monitor`):
 
 ```bash
 python3 /path/to/claude-monitor/monitor.py
@@ -80,10 +80,10 @@ python3 /path/to/claude-monitor/monitor.py
 
 ### Custom Watch Paths
 
-Monitor specific directories:
+Monitor additional status file directories:
 
 ```bash
-python3 /path/to/claude-monitor/monitor.py --watch ~/projects ~/work ~/experiments
+python3 /path/to/claude-monitor/monitor.py --watch ~/.claude-monitor ~/custom-monitor
 ```
 
 ### Adjust Update Interval
@@ -107,7 +107,7 @@ python3 /path/to/claude-monitor/monitor.py --breadcrumb .my_task_status.json
 To enable monitoring in your projects, you need to:
 
 1. Update your project's `CLAUDE.md` with task monitoring instructions
-2. Create `.claude_task.json` files when working on long-running tasks
+2. Create status files in `~/.claude-monitor/<project_name>.json` when working on long-running tasks
 
 ### Step 1: Update CLAUDE.md
 
@@ -118,7 +118,9 @@ Quick snippet:
 ```markdown
 ## Task Status Reporting
 
-When working on multi-step tasks, create `.claude_task.json` for monitoring.
+When working on multi-step tasks, create status files in `~/.claude-monitor/` for monitoring.
+
+Status file location: `~/.claude-monitor/<project_name>.json`
 
 Status file format:
 ```json
@@ -134,11 +136,22 @@ Status file format:
 ```
 
 Status values: `pending`, `in_progress`, `blocked`, `waiting`, `completed`, `error`
+
+### For Claude Code: Use Write Tool
+
+**IMPORTANT:** Claude Code should use the **Write tool** directly to create/update status files, NOT Bash with heredocs. This avoids permission prompts.
+
+```python
+Write(
+    file_path="/Users/username/.claude-monitor/<project_name>.json",
+    content=json.dumps({...}, indent=2)
+)
+```
 ```
 
 ### Step 2: Create Status Files
 
-When Claude Code works on tasks in your project, it should create/update `.claude_task.json`:
+When Claude Code works on tasks in your project, it should create/update status files in `~/.claude-monitor/`:
 
 **Example: Starting a task**
 ```json
@@ -204,7 +217,7 @@ def update_task_status(
     current_step: str = None,
     message: str = None,
     needs_attention: bool = False,
-    status_file: Path = Path('.claude_task.json')
+    status_file: Path = Path.home() / '.claude-monitor' / '<project_name>.json'
 ):
     """Update Claude task monitoring status file."""
     data = {
@@ -335,9 +348,10 @@ python3 /path/to/claude-monitor/monitor.py --watch ~/projects/git/home_assistant
 ### Troubleshooting
 
 **No tasks showing up?**
-- Check that `.claude_task.json` files exist in your projects
+- Check that status files exist in `~/.claude-monitor/`
 - Verify the `updated_at` timestamp is within the last 24 hours
-- Make sure the JSON is valid (use `python3 -m json.tool < .claude_task.json`)
+- Make sure the JSON is valid (use `python3 -m json.tool < ~/.claude-monitor/project.json`)
+- Ensure the watch path includes `~/.claude-monitor` (default)
 
 **Tasks not updating?**
 - Ensure the status file is being written regularly
@@ -359,7 +373,8 @@ python3 /path/to/claude-monitor/monitor.py --watch ~/projects/git/home_assistant
 Your projects:
 ~/projects/my-project/
 ├── CLAUDE.md                     # Includes task monitoring instructions
-├── .claude_task.json             # Status breadcrumb (created by Claude or scripts)
+~/.claude-monitor/
+├── project_name.json              # Status file (created by Claude or scripts)
 └── ...
 ```
 

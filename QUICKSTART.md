@@ -13,15 +13,15 @@ Open **two terminal windows**.
 ### Terminal 1: Start the Monitor
 
 ```bash
-./run_monitor.sh --watch ~/claude-monitor
+./run_monitor.sh
 ```
 
 You should see:
 ```
 🔍 Claude Task Monitor
 
-Watching: /Users/nthmost/claude-monitor
-Looking for: .claude_task.json
+Watching: ~/.claude-monitor
+Looking for: *.json
 Update interval: 2.0s
 
 Press Ctrl+C to exit
@@ -37,12 +37,12 @@ Watch Terminal 1 - you should see the task appear, progress through stages, and 
 
 ## 3. Create Your First Status File
 
-Try it manually in any project:
+Try it manually:
 
 ```bash
-cd ~/projects/your-project
+mkdir -p ~/.claude-monitor
 
-cat > .claude_task.json << 'EOF'
+cat > ~/.claude-monitor/my_test.json << 'EOF'
 {
   "task_name": "My First Monitored Task",
   "status": "in_progress",
@@ -53,11 +53,7 @@ cat > .claude_task.json << 'EOF'
 EOF
 ```
 
-Then watch it in the monitor:
-
-```bash
-./run_monitor.sh --watch ~/projects/your-project
-```
+The monitor (if running) will automatically pick it up!
 
 ## 4. Integrate with Your Projects
 
@@ -66,7 +62,9 @@ Add to your project's `CLAUDE.md`:
 ```markdown
 ## Task Status Reporting
 
-When working on multi-step tasks, create `.claude_task.json`:
+When working on multi-step tasks, create status files in `~/.claude-monitor/<project_name>.json`:
+
+Location: `~/.claude-monitor/<project_name>.json`
 
 ```json
 {
@@ -78,6 +76,8 @@ When working on multi-step tasks, create `.claude_task.json`:
 ```
 
 Status values: `pending`, `in_progress`, `blocked`, `waiting`, `completed`, `error`
+
+**For Claude Code:** Use the Write tool directly, not Bash heredocs.
 ```
 
 ## 5. Run in Background
@@ -103,10 +103,10 @@ screen -S claude-monitor
 
 ## Common Use Cases
 
-### Watching Multiple Projects
+### Watching Additional Directories
 
 ```bash
-./run_monitor.sh --watch ~/projects ~/llm-router ~/experiments
+./run_monitor.sh --watch ~/.claude-monitor ~/custom-monitor
 ```
 
 ### Slower Updates (Less CPU)
@@ -115,10 +115,10 @@ screen -S claude-monitor
 ./run_monitor.sh --interval 5.0
 ```
 
-### Single Project Focus
+### Custom Status Directory
 
 ```bash
-./run_monitor.sh --watch ~/projects/git/home_assistant_AI_integration
+./run_monitor.sh --watch ~/my-custom-status-dir
 ```
 
 ## Python Integration
@@ -130,7 +130,10 @@ import json
 from pathlib import Path
 from datetime import datetime, timezone
 
-def update_task_status(task_name, status, progress_percent=None, message=None):
+def update_task_status(task_name, status, progress_percent=None, message=None,
+                      status_file=Path.home() / '.claude-monitor' / 'my_project.json'):
+    status_file.parent.mkdir(parents=True, exist_ok=True)
+
     data = {
         'task_name': task_name,
         'status': status,
@@ -141,7 +144,7 @@ def update_task_status(task_name, status, progress_percent=None, message=None):
     if message:
         data['message'] = message
 
-    with open('.claude_task.json', 'w') as f:
+    with open(status_file, 'w') as f:
         json.dump(data, f, indent=2)
 
 # Use it:
@@ -151,9 +154,9 @@ update_task_status("Training Model", "in_progress", progress_percent=45)
 ## Troubleshooting
 
 ### "No active tasks"
-- Check that `.claude_task.json` exists in watched directories
+- Check that status files exist in `~/.claude-monitor/`
 - Verify `updated_at` is recent (within 24 hours)
-- Confirm JSON is valid: `python3 -m json.tool < .claude_task.json`
+- Confirm JSON is valid: `python3 -m json.tool < ~/.claude-monitor/project.json`
 
 ### Tasks not updating
 - Make sure files are being written (check modification time with `ls -la`)

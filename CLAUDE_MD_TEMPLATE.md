@@ -56,6 +56,29 @@ When working on long-running or multi-step tasks in this project, create a task 
 - `message` (string): Additional context or status message
 - `needs_attention` (bool): Set to `true` if user action required
 
+### For Claude Code: Use Write Tool
+
+**IMPORTANT:** When creating/updating status files, Claude Code should use the **Write tool** directly, NOT Bash with heredocs.
+
+```python
+# Use the Write tool with file_path and JSON content
+# Example:
+Write(
+    file_path="/Users/username/.claude-monitor/<project_name>.json",
+    content=json.dumps({
+        "task_name": "Training Wakeword Model",
+        "status": "in_progress",
+        "progress_percent": 45,
+        "current_step": "Step 9000/20000",
+        "message": "Training neural network",
+        "needs_attention": False,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }, indent=2)
+)
+```
+
+This avoids permission prompts and is the correct tool for file operations.
+
 ### Update Frequency
 - Update the file whenever status changes significantly
 - For long operations, update every 5-10 seconds
@@ -120,7 +143,7 @@ def update_task_status(
     current_step: str = None,
     message: str = None,
     needs_attention: bool = False,
-    status_file: Path = Path.home() / '.claude' / 'monitor' / '<project_name>.json'
+    status_file: Path = Path.home() / '.claude-monitor' / '<project_name>.json'
 ):
     """
     Update Claude task monitoring status file.
