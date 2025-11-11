@@ -121,7 +121,7 @@ python3 /path/to/claude-monitor/monitor.py --size large
 ```
 
 **Display Mode Comparison:**
-- **Tiny**: Status | Project | Task (multi-line) | Progress Bar | Updated
+- **Tiny**: Status | Task (single line if tiny_title set, otherwise multi-line) | Progress Bar | Updated
 - **Small**: Status | Project | Task | Current Step | Updated
 - **Medium**: Status | Project | Task | Current Step | Message | Updated
 - **Large**: Status | Project | Task | Current Step | Message | Progress % | Updated

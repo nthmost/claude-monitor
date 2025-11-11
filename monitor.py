@@ -297,24 +297,24 @@ def format_time_ago(age_seconds: Optional[float]) -> str:
 
 
 def create_active_tasks_tiny(active_tasks: List[TaskStatus]) -> Table:
-    """Tiny mode: Absolute minimal for truly tiny screens - will be customized next"""
-    # TODO: Make this even more minimal
+    """Tiny mode: Absolute minimal for truly tiny screens"""
     table = Table(title="🔄 Active Tasks", show_header=True, border_style="yellow", expand=True, show_lines=True)
     table.add_column("Status", width=8)
-    table.add_column("Project/Task", style="cyan", no_wrap=False)
+    table.add_column("Task", style="cyan", no_wrap=False)  # Single line if tiny_title provided
     table.add_column("Progress", width=12)
     table.add_column("Updated", width=10, style="dim")
 
     for task in active_tasks:
         status_text = task.get_emoji()
 
+        # If tiny_title is provided, use ONLY that (single line, no task name, no step)
+        # Otherwise, show project + task + step (multi-line)
         if task.tiny_title:
-            project_task = f"[cyan]{task.tiny_title}[/cyan]\n[bold]{task.task_name}[/bold]"
+            task_display = f"[bold]{task.tiny_title}[/bold]"
         else:
-            project_task = f"[cyan]{task.project_name}[/cyan]\n[bold]{task.task_name}[/bold]"
-
-        if task.current_step:
-            project_task += f"\n[dim]{task.current_step}[/dim]"
+            task_display = f"[cyan]{task.project_name}[/cyan]\n[bold]{task.task_name}[/bold]"
+            if task.current_step:
+                task_display += f"\n[dim]{task.current_step}[/dim]"
 
         progress = ""
         if task.progress_percent is not None:
@@ -326,7 +326,7 @@ def create_active_tasks_tiny(active_tasks: List[TaskStatus]) -> Table:
         row_style = "bold red" if task.needs_attention else None
         table.add_row(
             status_text,
-            project_task,
+            task_display,
             progress,
             format_time_ago(task.age_seconds),
             style=row_style

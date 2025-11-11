@@ -55,7 +55,7 @@ When working on long-running or multi-step tasks in this project, create a task 
 - `current_step` (string): What's happening right now
 - `message` (string): Additional context or status message
 - `needs_attention` (bool): Set to `true` if user action required
-- `tiny_title` (string): Short title for tiny display mode (e.g., "Training", "Building", "Testing")
+- `tiny_title` (string): Short title for tiny display mode - when set, ONLY this is shown (not project/task/step) for maximum compactness (e.g., "Training", "Building", "Testing")
 
 ### For Claude Code: Use Write Tool
 
@@ -72,7 +72,7 @@ Write(
         "progress_percent": 45,
         "current_step": "Step 9000/20000",
         "message": "Training neural network",
-        "tiny_title": "Training",  # Optional: short title for tiny display mode
+        "tiny_title": "Training",  # Optional: shows ONLY this in tiny mode (replaces project/task/step)
         "needs_attention": False,
         "updated_at": datetime.now(timezone.utc).isoformat()
     }, indent=2)

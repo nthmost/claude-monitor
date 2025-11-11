@@ -31,12 +31,14 @@ This is a general-purpose monitoring tool for tracking Claude Code task progress
 The monitor supports 4 display size modes via `--size` argument to accommodate different screen sizes:
 
 **Tiny Mode** (`--size tiny`, default):
-- Ultra-minimal for truly tiny screens (will be further minimized soon)
-- Columns: Status, Project/Task (flexible width), Progress (bar), Updated
+- Ultra-minimal for truly tiny screens
+- Columns: Status, Task (flexible width), Progress (bar), Updated
 - Only 4 columns to maximize horizontal space
 - Progress bar is small (8 chars)
-- Project/Task column shows: tiny_title/project name, task name, current step (multi-line)
-- Supports optional `tiny_title` field for custom short labels
+- Task column behavior:
+  - If `tiny_title` field provided: Shows ONLY the tiny_title (single line, very compact)
+  - Otherwise: Shows project name, task name, and current step (multi-line)
+- Use `tiny_title` for maximum space efficiency on tiny screens
 
 **Small Mode** (`--size small`):
 - Compact view with progress bar
@@ -91,7 +93,7 @@ The monitor supports 4 display size modes via `--size` argument to accommodate d
 - `current_step` (string): What's happening now
 - `message` (string): Additional context
 - `needs_attention` (bool): User intervention required
-- `tiny_title` (string): Short title for tiny display mode (replaces project name in Project/Task column)
+- `tiny_title` (string): Short title for tiny display mode (when provided, displays ONLY this instead of project/task/step - for maximum compactness)
 
 ## Usage
 
