@@ -1,12 +1,69 @@
 # Claude Task Monitor
 
-A general-purpose monitoring tool for tracking Claude Code task progress across multiple projects. Perfect for keeping an eye on long-running operations, training jobs, or any multi-step tasks.
+A live terminal dashboard that shows what Claude Code is working on across all your projects. Watch long-running tasks, training jobs, builds, and migrations in real-time.
 
-## Overview
+```
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ 🔄  voice-assistant                                          ┃
+┃     Training wakeword model                                  ┃
+┃     Processing audio samples 8750/20000                      ┃
+┃     ████████░░░░░░░░░░ 43%                    2m ago         ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃ ⚠️  home-automation                                          ┃
+┃     Database migration                                       ┃
+┃     Conflict in migration 0042 - needs review                ┃
+┃                                                  5s ago      ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+```
 
-This monitor watches for JSON status files in `~/.claude-monitor/` that Claude Code (or any process) creates to report task status. It displays a live-updating terminal interface showing active tasks, their progress, and which ones need attention.
+**See tasks across all projects. Know when Claude needs your attention. Never lose track of long-running operations.**
 
-## Features
+## Table of Contents
+
+- [🚀 Quickest Start](#-quickest-start-for-claude-code-users) - Get up and running in 30 seconds
+- [See It In Action](#see-it-in-action-30-second-demo) - Try the demo first
+- [Installation](#installation) - Set up the monitor
+- [Usage](#usage) - Command-line options
+- [Integrating with Your Projects](#integrating-with-your-projects) - The easy way vs. manual
+- [Status File Format](#status-file-format) - Technical reference
+- [Python Helper Functions](#python-helper-functions) - For script integration
+- [Tips & Troubleshooting](#tips) - Common issues and solutions
+
+## 🚀 Quickest Start (For Claude Code Users)
+
+**The fastest way to get monitoring in your projects:**
+
+1. **Run Claude Code inside this `claude-monitor` directory**
+2. **Tell Claude:** *"Add task monitoring to my project at ~/projects/my-awesome-project"*
+3. **Claude will automatically** edit that project's `CLAUDE.md` file with monitoring instructions
+4. **Next time Claude works there**, you'll see live task updates in this monitor!
+
+See `CLAUDE_MD_TEMPLATE.md` for what gets added to your projects.
+
+**Not using Claude Code?** No problem! You can manually create status files from any script or process (see [Manual Integration](#manual-integration) below).
+
+## See It In Action (30 Second Demo)
+
+Want to see what this looks like before setting up?
+
+```bash
+# Terminal 1: Start the monitor
+cd /path/to/claude-monitor
+./run_monitor.sh
+
+# Terminal 2: Run the demo
+cd /path/to/claude-monitor
+./run_demo.sh
+```
+
+You'll see a live-updating dashboard showing task status, progress bars, and completion notifications.
+
+**Bonus:** Try the chaotic Spaceteam demo for multiple concurrent tasks:
+```bash
+python3 spaceteam_demo.py
+```
+
+## What You Get
 
 - 🔄 **Live updates** - Real-time task monitoring with configurable refresh intervals
 - 📊 **Progress tracking** - Visual progress bars and percentage completion
@@ -14,7 +71,7 @@ This monitor watches for JSON status files in `~/.claude-monitor/` that Claude C
 - 🎨 **Rich terminal UI** - Clean, colorful display using the `rich` library
 - 🌳 **Multi-project support** - Monitors multiple directory trees simultaneously
 - 📁 **Automatic discovery** - Recursively finds all task breadcrumb files
-- ⏱️ **Age filtering** - Ignores stale tasks (>24 hours old)
+- ⏱️ **Smart filtering** - Auto-hides stale tasks (>10 min for active, >1 hour for errors)
 
 ## Installation
 
@@ -128,54 +185,51 @@ python3 /path/to/claude-monitor/monitor.py --size large
 
 ## Integrating with Your Projects
 
-To enable monitoring in your projects, you need to:
+### The Easy Way: Let Claude Do It
 
-1. Update your project's `CLAUDE.md` with task monitoring instructions
-2. Create status files in `~/.claude-monitor/<project_name>.json` when working on long-running tasks
+**If you're using Claude Code:**
 
-### Step 1: Update CLAUDE.md
+1. Open Claude Code in this `claude-monitor` directory
+2. Say: *"Add task monitoring to ~/projects/my-project"*
+3. Claude will edit `~/projects/my-project/CLAUDE.md` with the monitoring instructions
+4. Done! Next time Claude works there, you'll see live updates
 
-See `CLAUDE_MD_TEMPLATE.md` for complete instructions to add to your project's `CLAUDE.md`.
+**What Claude adds:** See `CLAUDE_MD_TEMPLATE.md` for the exact instructions that get added to your project's `CLAUDE.md` file.
 
-Quick snippet:
+### Manual Integration
+
+**If you want to set it up yourself or use it from scripts:**
+
+#### Step 1: Update Your Project's CLAUDE.md
+
+Add the task monitoring section from `CLAUDE_MD_TEMPLATE.md` to your project's `CLAUDE.md` file. This tells Claude Code to create status files when working on multi-step tasks.
+
+Quick snippet of what to add:
 
 ```markdown
 ## Task Status Reporting
 
 When working on multi-step tasks, create status files in `~/.claude-monitor/` for monitoring.
 
-Status file location: `~/.claude-monitor/<project_name>.json`
+**Status file location:** `~/.claude-monitor/<project_name>.json`
 
-Status file format:
-```json
-{
-  "task_name": "Training Model",
-  "status": "in_progress",
-  "progress_percent": 45,
-  "current_step": "Step 9000/20000",
-  "message": "Training neural network",
-  "needs_attention": false,
-  "updated_at": "2025-11-10T14:30:00Z"
-}
-```
+**For Claude Code:** Use the Write tool directly (not Bash) to avoid permission prompts:
 
-Status values: `pending`, `in_progress`, `blocked`, `waiting`, `completed`, `error`
-
-### For Claude Code: Use Write Tool
-
-**IMPORTANT:** Claude Code should use the **Write tool** directly to create/update status files, NOT Bash with heredocs. This avoids permission prompts.
-
-```python
 Write(
     file_path="/Users/username/.claude-monitor/<project_name>.json",
-    content=json.dumps({...}, indent=2)
+    content=json.dumps({
+        "task_name": "Task description",
+        "status": "in_progress",
+        "progress_percent": 45,
+        "current_step": "Current operation",
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }, indent=2)
 )
 ```
-```
 
-### Step 2: Create Status Files
+#### Step 2: Create Status Files
 
-When Claude Code works on tasks in your project, it should create/update status files in `~/.claude-monitor/`:
+When working on tasks, create/update status files in `~/.claude-monitor/`:
 
 **Example: Starting a task**
 ```json
@@ -224,6 +278,25 @@ When Claude Code works on tasks in your project, it should create/update status 
 - `current_step` (string): Description of current operation
 - `message` (string): Additional context or details
 - `needs_attention` (boolean): Set to `true` if user action is required
+- `tiny_title` (string): Short title for tiny display mode (when set, displays ONLY this instead of project/task/step)
+
+### Multiple Tasks Per Project
+
+Projects can create multiple JSON files to track parallel operations:
+
+```bash
+~/.claude-monitor/
+├── myproject_main.json       # Main orchestration task
+├── myproject_frontend.json   # Frontend build
+├── myproject_backend.json    # Backend build
+└── myproject_tests.json      # Test suite
+```
+
+**Each file appears as a separate row** in the monitor, letting you see all parallel tasks at once. Perfect for:
+- Sub-agents working on different parts of a task
+- Parallel builds, tests, or deployments
+- Multiple training jobs
+- Concurrent data processing pipelines
 
 ## Python Helper Functions
 

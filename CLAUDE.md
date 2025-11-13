@@ -18,9 +18,10 @@ This is a general-purpose monitoring tool for tracking Claude Code task progress
 ### How It Works
 
 1. Projects drop JSON status files in `~/.claude-monitor/` using unique filenames (e.g., `project_name.json`)
-2. The monitor scans this directory for `*.json` files at regular intervals (default: 2 seconds)
-3. Status information is displayed in a live-updating terminal UI
-4. Stale tasks are automatically filtered based on status and age:
+2. **Multiple files per project:** Projects can create multiple JSON files to track parallel tasks (e.g., `project_main.json`, `project_frontend.json`, `project_backend.json`)
+3. The monitor scans this directory for `*.json` files at regular intervals (default: 2 seconds)
+4. Status information is displayed in a live-updating terminal UI
+5. Stale tasks are automatically filtered based on status and age:
    - Active tasks (`in_progress`, `pending`, `waiting`): Hidden after 10 minutes of inactivity
    - Error/blocked tasks: Hidden after 1 hour
    - Completed tasks: Hidden after 30 minutes
@@ -198,6 +199,57 @@ When working on tasks in this or other projects:
 - Every 5-10 seconds for long operations
 - When progress_percent changes by 5% or more
 - Immediately when `needs_attention` becomes true
+
+### Parallel Task Tracking
+
+When Claude Code spawns multiple sub-agents or parallelizes work, create separate status files:
+
+**Example: Parallel build tasks**
+```python
+# Main orchestration task
+Write(
+    file_path="~/.claude-monitor/myproject_main.json",
+    content=json.dumps({
+        "task_name": "Orchestrating parallel build",
+        "status": "in_progress",
+        "current_step": "Spawned 3 build agents",
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }, indent=2)
+)
+
+# Frontend build (sub-agent 1)
+Write(
+    file_path="~/.claude-monitor/myproject_frontend.json",
+    content=json.dumps({
+        "task_name": "Building frontend",
+        "status": "in_progress",
+        "progress_percent": 30,
+        "current_step": "Compiling React components",
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }, indent=2)
+)
+
+# Backend build (sub-agent 2)
+Write(
+    file_path="~/.claude-monitor/myproject_backend.json",
+    content=json.dumps({
+        "task_name": "Building backend API",
+        "status": "in_progress",
+        "progress_percent": 45,
+        "current_step": "Running tests",
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }, indent=2)
+)
+```
+
+**Benefits:**
+- Each parallel task appears as a separate row in the monitor
+- See progress of all parallel operations simultaneously
+- Track which sub-agents need attention independently
+- No file write conflicts between parallel tasks
+- Monitor shows the full picture of concurrent work
+
+**Naming convention:** Use `<project>_<task>.json` format for multiple tasks per project.
 
 ### Cleanup
 

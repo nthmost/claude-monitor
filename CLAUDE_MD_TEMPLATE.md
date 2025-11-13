@@ -12,16 +12,64 @@ Add the following section to your project's `CLAUDE.md` file:
 When working on long-running or multi-step tasks in this project, create a task status file for monitoring:
 
 ### Status File Location
-- **Location:** `~/.claude-monitor/<project_name>.json`
+- **Location:** `~/.claude-monitor/<project_name>.json` (or multiple files for parallel tasks)
 - **Purpose:** Allows external monitoring of Claude Code progress
 - **Monitored by:** The `claude-monitor` tool (https://github.com/nthmost/claude-monitor)
 - **Note:** All projects deposit breadcrumbs in `~/.claude-monitor/` using project-specific filenames
+- **Multiple Tasks:** Projects can create multiple JSON files (e.g., `project_task1.json`, `project_task2.json`) to track parallel operations
 
 ### When to Create Status Files
 - Multi-step tasks (3+ steps)
 - Long-running operations (>30 seconds)
 - Tasks that may need user intervention
 - Background processes (training, downloads, builds)
+- **Parallel tasks:** When using sub-agents or running tasks in parallel, create separate JSON files for each task
+
+### Parallel Task Tracking
+
+When Claude Code spawns multiple sub-agents or parallelizes work:
+
+**Create separate status files for each parallel task:**
+```python
+# Main task
+Write(
+    file_path="~/.claude-monitor/<project_name>_main.json",
+    content=json.dumps({
+        "task_name": "Orchestrating parallel build",
+        "status": "in_progress",
+        "current_step": "Spawned 3 build agents",
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }, indent=2)
+)
+
+# Sub-agent 1
+Write(
+    file_path="~/.claude-monitor/<project_name>_frontend.json",
+    content=json.dumps({
+        "task_name": "Building frontend",
+        "status": "in_progress",
+        "progress_percent": 30,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }, indent=2)
+)
+
+# Sub-agent 2
+Write(
+    file_path="~/.claude-monitor/<project_name>_backend.json",
+    content=json.dumps({
+        "task_name": "Building backend",
+        "status": "in_progress",
+        "progress_percent": 45,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }, indent=2)
+)
+```
+
+**Benefits:**
+- Each parallel task appears as a separate row in the monitor
+- See progress of all parallel operations simultaneously
+- Track which sub-agents need attention independently
+- No file write conflicts between parallel tasks
 
 ### Status File Format
 
