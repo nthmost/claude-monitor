@@ -2,9 +2,49 @@
 
 Add this section to your project's `CLAUDE.md` to enable task monitoring.
 
+## IMPORTANT: Configure .clauderc First
+
+**CRITICAL:** Before adding the monitoring instructions to your `CLAUDE.md`, you MUST configure permissions in your project's `.clauderc` file. Without this, Claude Code will repeatedly ask for permission to write status files.
+
+### Add to `.clauderc`
+
+Add the following permissions to your project's `.clauderc` file:
+
+```ini
+# Claude monitor status updates - REQUIRED for task monitoring
+Read(/Users/YOUR_USERNAME/.claude-monitor/**)
+Write(/Users/YOUR_USERNAME/.claude-monitor/**)
+```
+
+Replace `YOUR_USERNAME` with your actual username. For example:
+- macOS/Linux: `/Users/nthmost/.claude-monitor/**` or `/home/username/.claude-monitor/**`
+- Windows: `C:/Users/username/.claude-monitor/**`
+
+**Why this is required:**
+- Without these permissions in `.clauderc`, Claude Code will prompt for permission every time it tries to update task status
+- These permissions are project-specific and persist across sessions
+- The `.clauderc` file should be committed to your repository so the permissions apply to all sessions
+
+### Example `.clauderc` section
+
+```ini
+# Project file permissions
+Read(/path/to/your/project/**)
+Write(/path/to/your/project/**)
+Edit(/path/to/your/project/**)
+
+# Claude monitor status updates - REQUIRED
+Read(/Users/nthmost/.claude-monitor/**)
+Write(/Users/nthmost/.claude-monitor/**)
+
+# Git operations
+Bash(git:*)
+Bash(gh:*)
+```
+
 ## Instructions for CLAUDE.md
 
-Add the following section to your project's `CLAUDE.md` file:
+After configuring `.clauderc`, add the following section to your project's `CLAUDE.md` file:
 
 ```markdown
 ## Task Status Reporting

@@ -33,10 +33,18 @@ A live terminal dashboard that shows what Claude Code is working on across all y
 
 **The fastest way to get monitoring in your projects:**
 
-1. **Run Claude Code inside this `claude-monitor` directory**
-2. **Tell Claude:** *"Add task monitoring to my project at ~/projects/my-awesome-project"*
-3. **Claude will automatically** edit that project's `CLAUDE.md` file with monitoring instructions
-4. **Next time Claude works there**, you'll see live task updates in this monitor!
+1. **FIRST:** Add permissions to your project's `.clauderc` file:
+   ```ini
+   # Claude monitor status updates - REQUIRED
+   Read(/Users/YOUR_USERNAME/.claude-monitor/**)
+   Write(/Users/YOUR_USERNAME/.claude-monitor/**)
+   ```
+   Replace `YOUR_USERNAME` with your actual username. **This prevents Claude Code from asking for permissions repeatedly.**
+
+2. **Run Claude Code inside this `claude-monitor` directory**
+3. **Tell Claude:** *"Add task monitoring to my project at ~/projects/my-awesome-project"*
+4. **Claude will automatically** edit that project's `CLAUDE.md` file with monitoring instructions
+5. **Next time Claude works there**, you'll see live task updates in this monitor!
 
 See `CLAUDE_MD_TEMPLATE.md` for what gets added to your projects.
 
@@ -200,11 +208,25 @@ python3 /path/to/claude-monitor/monitor.py --size large
 
 **If you want to set it up yourself or use it from scripts:**
 
-#### Step 1: Update Your Project's CLAUDE.md
+#### Step 1: Configure .clauderc (REQUIRED for Claude Code)
+
+**CRITICAL:** Add these permissions to your project's `.clauderc` file to prevent repeated permission prompts:
+
+```ini
+# Claude monitor status updates - REQUIRED
+Read(/Users/YOUR_USERNAME/.claude-monitor/**)
+Write(/Users/YOUR_USERNAME/.claude-monitor/**)
+```
+
+Replace `YOUR_USERNAME` with your actual username (e.g., `/Users/nthmost/.claude-monitor/**`).
+
+#### Step 2: Update Your Project's CLAUDE.md
 
 Add the task monitoring section from `CLAUDE_MD_TEMPLATE.md` to your project's `CLAUDE.md` file. This tells Claude Code to create status files when working on multi-step tasks.
 
-Quick snippet of what to add:
+**Before adding to CLAUDE.md, make sure you've added the `.clauderc` permissions above!**
+
+Quick snippet of what to add to CLAUDE.md:
 
 ```markdown
 ## Task Status Reporting
@@ -213,7 +235,7 @@ When working on multi-step tasks, create status files in `~/.claude-monitor/` fo
 
 **Status file location:** `~/.claude-monitor/<project_name>.json`
 
-**For Claude Code:** Use the Write tool directly (not Bash) to avoid permission prompts:
+**For Claude Code:** Use the Write tool directly (not Bash):
 
 Write(
     file_path="/Users/username/.claude-monitor/<project_name>.json",
@@ -227,7 +249,7 @@ Write(
 )
 ```
 
-#### Step 2: Create Status Files
+#### Step 3: Create Status Files
 
 When working on tasks, create/update status files in `~/.claude-monitor/`:
 

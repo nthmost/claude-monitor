@@ -321,10 +321,21 @@ To add new features or modify behavior:
 
 To enable monitoring in another project:
 
-1. Add task monitoring instructions to that project's `CLAUDE.md` (see `CLAUDE_MD_TEMPLATE.md`)
-2. Use the helper function to create/update status files
-3. Store status files in `~/.claude-monitor/<project_name>.json`
-4. Run the monitor to see live updates
+1. **FIRST:** Add permissions to that project's `.clauderc` file (see `CLAUDE_MD_TEMPLATE.md` for details)
+   - **CRITICAL:** Without `.clauderc` permissions, Claude Code will repeatedly ask for permission to write status files
+   - Add: `Read(/Users/YOUR_USERNAME/.claude-monitor/**)` and `Write(/Users/YOUR_USERNAME/.claude-monitor/**)`
+   - Replace `YOUR_USERNAME` with your actual username
+   - Commit `.clauderc` to the repository so permissions persist across sessions
+2. **THEN:** Add task monitoring instructions to that project's `CLAUDE.md` (see `CLAUDE_MD_TEMPLATE.md`)
+3. Use the helper function to create/update status files
+4. Store status files in `~/.claude-monitor/<project_name>.json`
+5. Run the monitor to see live updates
+
+**Why `.clauderc` is required:**
+- Claude Code needs explicit permission to write outside the project directory
+- Without `.clauderc` permissions, you'll be prompted every time a status file is updated
+- This is especially painful for long-running tasks that update status frequently
+- Adding the permissions once in `.clauderc` solves this permanently
 
 ## Best Practices
 

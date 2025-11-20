@@ -57,7 +57,17 @@ The monitor (if running) will automatically pick it up!
 
 ## 4. Integrate with Your Projects
 
-Add to your project's `CLAUDE.md`:
+**IMPORTANT:** First add permissions to your project's `.clauderc`:
+
+```ini
+# Claude monitor status updates - REQUIRED
+Read(/Users/YOUR_USERNAME/.claude-monitor/**)
+Write(/Users/YOUR_USERNAME/.claude-monitor/**)
+```
+
+Replace `YOUR_USERNAME` with your actual username. This prevents Claude Code from asking for permissions repeatedly.
+
+Then add to your project's `CLAUDE.md`:
 
 ```markdown
 ## Task Status Reporting
@@ -79,6 +89,8 @@ Status values: `pending`, `in_progress`, `blocked`, `waiting`, `completed`, `err
 
 **For Claude Code:** Use the Write tool directly, not Bash heredocs.
 ```
+
+See `CLAUDE_MD_TEMPLATE.md` for complete instructions.
 
 ## 5. Run in Background
 
