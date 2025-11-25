@@ -580,16 +580,20 @@ def main():
     monitor = ClaudeMonitor(watch_paths, args.breadcrumb)
 
     try:
-        with Live(console=console, refresh_per_second=1/args.interval) as live:
-            while True:
-                monitor.scan_for_breadcrumbs()
-                display = create_display(monitor, size=args.size)
-                live.update(display)
-                time.sleep(args.interval)
+        # Enter alternate screen mode (like top/htop) and clear
+        with console.screen(hide_cursor=True):
+            with Live(console=console, refresh_per_second=1/args.interval, screen=True) as live:
+                while True:
+                    monitor.scan_for_breadcrumbs()
+                    display = create_display(monitor, size=args.size)
+                    live.update(display)
+                    time.sleep(args.interval)
 
     except KeyboardInterrupt:
-        console.print("\n[yellow]Monitor stopped[/yellow]")
-        return 0
+        # Exit cleanly - the screen context manager will restore terminal
+        pass
+
+    return 0
 
 
 if __name__ == "__main__":
