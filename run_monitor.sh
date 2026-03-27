@@ -6,9 +6,10 @@ cd "$SCRIPT_DIR"
 
 VENV_DIR="$SCRIPT_DIR/.venv"
 
-# Create virtual environment if it doesn't exist
-if [ ! -d "$VENV_DIR" ]; then
+# Create or rebuild virtual environment if missing or broken (e.g. after Python upgrade)
+if [ ! -d "$VENV_DIR" ] || [ ! -x "$VENV_DIR/bin/python3" ] || ! "$VENV_DIR/bin/python3" -c "" 2>/dev/null; then
     echo "Creating virtual environment..."
+    rm -rf "$VENV_DIR"
     python3 -m venv "$VENV_DIR"
 fi
 
