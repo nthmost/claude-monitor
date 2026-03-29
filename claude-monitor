@@ -1,0 +1,31 @@
+#!/bin/bash
+# Claude Monitor - Wrapper script for easy PATH installation
+# Install: ln -s ~/projects/git/claude-monitor/claude-monitor /usr/local/bin/claude-monitor
+
+# Resolve the directory this script lives in (works via symlink too)
+MONITOR_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")")" && pwd)"
+MONITOR_SCRIPT="$MONITOR_DIR/run_monitor.sh"
+
+# Check if the monitor script exists
+if [ ! -f "$MONITOR_SCRIPT" ]; then
+    echo "Error: Monitor script not found at $MONITOR_SCRIPT"
+    exit 1
+fi
+
+# Parse arguments and translate size shortcuts
+ARGS=()
+for arg in "$@"; do
+    case "$arg" in
+        tiny|small|medium|large)
+            # Translate size shortcut to --size argument
+            ARGS+=("--size" "$arg")
+            ;;
+        *)
+            # Pass through all other arguments
+            ARGS+=("$arg")
+            ;;
+    esac
+done
+
+# Run the monitor with translated arguments
+exec "$MONITOR_SCRIPT" "${ARGS[@]}"
