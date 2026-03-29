@@ -72,7 +72,15 @@ class TaskStatus:
 
     @property
     def age_seconds(self) -> Optional[float]:
-        """How old is this breadcrumb?"""
+        """How old is this breadcrumb? Prefers updated_at from JSON over file mtime."""
+        updated_at = self.data.get('updated_at')
+        if updated_at:
+            try:
+                from datetime import datetime, timezone
+                dt = datetime.fromisoformat(updated_at.replace('Z', '+00:00'))
+                return (datetime.now(timezone.utc) - dt).total_seconds()
+            except (ValueError, TypeError):
+                pass
         if not self.file_mtime:
             return None
         return time.time() - self.file_mtime
@@ -168,8 +176,8 @@ class ClaudeMonitor:
                 # Error/blocked tasks: show for 1 hour
                 if t.status in ('error', 'blocked') and t.age_seconds > 3600:
                     continue
-                # Other active tasks: show for 10 minutes
-                if t.status in ('in_progress', 'pending', 'waiting') and t.age_seconds > 600:
+                # Other active tasks: show for 6 hours (long-running overnight jobs)
+                if t.status in ('in_progress', 'pending', 'waiting') and t.age_seconds > 21600:
                     continue
 
             active.append(t)
